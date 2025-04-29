@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "grocery-agent"
+version = "0.1.0"
+description = "An AI-powered agent that helps users find the best grocery deals"
+authors = ["Your Name <your.email@example.com>"]
+packages = [{include = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+playwright = "^1.45.0"
+openai = "^1.14.0"
+langchain = "^0.2.0"
+tiktoken = "^0.6.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+pytest-asyncio = "^0.23.0"
+pytest-playwright = "^0.4.0"
+vcrpy = "^6.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test_*.py"] 

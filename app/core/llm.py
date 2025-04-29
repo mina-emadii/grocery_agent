@@ -1,156 +1,148 @@
-from openai import OpenAI
 import os
-from typing import List, Dict, Any
-from dotenv import load_dotenv
-from .price_fetcher import PriceFetcher
 import json
 import logging
+from typing import Dict, List, Any, Optional
+from dotenv import load_dotenv
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain.prompts import PromptTemplate
+from langchain.output_parsers import PydanticOutputParser
+from pydantic import BaseModel, Field
 
 load_dotenv()
 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-async def get_product_recommendation(
-    item_name: str,
-    dietary_restrictions: List[str],
-    store_options: List[str]
-) -> Dict[str, Any]:
-    """
-    Get product recommendations using LLM based on item name and dietary restrictions.
-    """
-    try:
-        # First, fetch real prices and product information from all stores
-        async with PriceFetcher() as price_fetcher:
-            store_data = await price_fetcher.get_all_prices(item_name, dietary_restrictions)
-        
-        logger.info(f"Fetched store data: {json.dumps(store_data, indent=2)}")
-        
-        # Filter out stores with no price data or unavailable products
-        available_stores = {
-            store: data for store, data in store_data.items() 
-            if data.get("price") is not None and data.get("availability", False)
-        }
-        
-        if not available_stores:
-            logger.warning(f"No available stores found for {item_name}")
-            # Fallback if no prices are available
-            return {
-                "store": store_options[0],
-                "product_name": item_name,
-                "price": None,
-                "is_suitable": True,
-                "dietary_info": {
-                    "restrictions_handled": [],
-                    "ingredients": [],
-                    "allergen_info": "No specific allergen information available"
-                },
-                "explanation": "Unable to fetch current prices. Please check store websites directly."
-            }
+class ProductRecommendation(BaseModel):
+    """Model for product recommendations"""
+    store: str = Field(description="Store where the product is recommended")
+    product_name: str = Field(description="Name of the recommended product")
+    price: float = Field(description="Price of the product")
+    is_suitable: bool = Field(description="Whether the product meets dietary restrictions")
+    dietary_info: Dict[str, Any] = Field(description="Dietary information about the product")
+    explanation: str = Field(description="Explanation of the recommendation")
 
-        # Create a detailed comparison string for the LLM
-        store_comparison = []
-        for store, data in available_stores.items():
-            price_info = f"Price: ${data['price']:.2f}"
-            dietary_info = data.get('dietary_info', {})
-            restrictions = dietary_info.get('restrictions_handled', [])
-            ingredients = dietary_info.get('ingredients', [])
-            allergens = dietary_info.get('allergen_info', 'No allergen information')
+class ProductRecommender:
+    def __init__(self):
+        self.api_key = os.getenv("GOOGLE_API_KEY")
+        if not self.api_key:
+            raise ValueError("GOOGLE_API_KEY environment variable is not set")
+        
+        self.model = ChatGoogleGenerativeAI(
+            model="gemini-pro",
+            google_api_key=self.api_key,
+            temperature=0.2,
+            convert_system_message_to_human=True
+        )
+        
+        self.output_parser = PydanticOutputParser(pydantic_object=ProductRecommendation)
+        
+        self.recommendation_prompt = PromptTemplate(
+            template="""
+            Given the following information:
+            - Product: {product_name}
+            - Dietary Restrictions: {dietary_restrictions}
+            - Store Comparisons:
             
-            store_comparison.append(f"""
-            {store}:
-            - {price_info}
-            - Dietary restrictions handled: {', '.join(restrictions)}
-            - Main ingredients: {', '.join(ingredients)}
-            - Allergen info: {allergens}
-            """)
-        
-        comparison_text = "\n".join(store_comparison)
-        
-        prompt = f"""
-        Given the following information:
-        - Product: {item_name}
-        - Dietary Restrictions: {', '.join(dietary_restrictions)}
-        - Store Comparisons:
-        {comparison_text}
-
-        Please provide a recommendation in the following JSON format:
-        {{
-            "store": "store name (must be one of the stores with prices listed above)",
-            "product_name": "specific product name",
-            "price": actual_price_from_store,
-            "is_suitable": true/false,
-            "dietary_info": {{
-                "restrictions_handled": ["list of handled restrictions"],
-                "ingredients": ["list of main ingredients"],
-                "allergen_info": "any allergen information"
-            }},
-            "explanation": "brief explanation of why this is the best choice, considering price, dietary restrictions, and product quality"
-        }}
-
-        Consider:
-        1. Dietary restrictions and allergies (highest priority)
-        2. Price competitiveness
-        3. Product availability
-        4. Quality and brand reputation
-        5. Ingredient quality and sourcing
-
-        Return ONLY the JSON object, no additional text.
+            {store_data}
+            
+            Please provide a recommendation in the following JSON format:
+            {{
+                "store": "store name (must be one of the stores with prices listed above)",
+                "product_name": "specific product name",
+                "price": actual_price_from_store,
+                "is_suitable": true/false,
+                "dietary_info": {{
+                    "restrictions_handled": ["list of handled restrictions"],
+                    "ingredients": ["list of main ingredients"],
+                    "allergen_info": "any allergen information"
+                }},
+                "explanation": "brief explanation of why this is the best choice, considering price, dietary restrictions, and product quality"
+            }}
+            Consider:
+            1. Dietary restrictions and allergies (highest priority)
+            2. Price competitiveness
+            3. Product availability
+            4. Quality and brand reputation
+            5. Ingredient quality and sourcing
+            Return ONLY the JSON object, no additional text.
+            
+            {format_instructions}
+            """,
+            input_variables=["product_name", "dietary_restrictions", "store_data"],
+            partial_variables={"format_instructions": self.output_parser.get_format_instructions()}
+        )
+    
+    async def get_recommendation(self, product_name: str, dietary_restrictions: List[str], store_data: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
         """
-
-        logger.info(f"Sending prompt to OpenAI: {prompt}")
+        Get a product recommendation based on store data and dietary restrictions
         
-        try:
-            response = await client.chat.completions.create(
-                model=os.getenv("MODEL_NAME", "gpt-3.5-turbo"),
-                messages=[
-                    {"role": "system", "content": "You are a helpful grocery shopping assistant that provides detailed product recommendations based on real-time prices and dietary requirements. Always respond with valid JSON only."},
-                    {"role": "user", "content": prompt}
-                ],
-                temperature=0.3,
-                max_tokens=500
-            )
-
-            # Get the response content
-            content = response.choices[0].message.content.strip()
-            logger.info(f"Received response from OpenAI: {content}")
+        Args:
+            product_name: Name of the product
+            dietary_restrictions: List of dietary restrictions
+            store_data: Dictionary with store names as keys and product information as values
             
-            # Try to parse the JSON response
-            try:
-                recommendation = json.loads(content)
-                logger.info(f"Successfully parsed recommendation: {json.dumps(recommendation, indent=2)}")
-                return recommendation
-            except json.JSONDecodeError as e:
-                logger.error(f"Failed to parse JSON response: {e}")
-                raise ValueError("Invalid JSON response from OpenAI")
-                
+        Returns:
+            Dictionary with product recommendation
+        """
+        try:
+            # Format the dietary restrictions
+            formatted_restrictions = ", ".join(dietary_restrictions) if dietary_restrictions else "None"
+            
+            # Format the store data
+            store_data_text = ""
+            for store, data in store_data.items():
+                store_data_text += f"\n            {store}:\n"
+                store_data_text += f"            - Price: ${data.get('price', 0):.2f}\n"
+                store_data_text += f"            - Dietary restrictions handled: {', '.join(data.get('dietary_info', {}).get('restrictions_handled', []))}\n"
+                store_data_text += f"            - Main ingredients: {', '.join(data.get('dietary_info', {}).get('ingredients', []))}\n"
+                store_data_text += f"            - Allergen info: {data.get('dietary_info', {}).get('allergen_info', 'No allergen information available')}\n"
+            
+            # Create the prompt
+            prompt = self.recommendation_prompt.format(
+                product_name=product_name,
+                dietary_restrictions=formatted_restrictions,
+                store_data=store_data_text
+            )
+            
+            # Get response from Gemini
+            response = await self.model.ainvoke(prompt)
+            
+            # Parse the response
+            recommendation = self.output_parser.parse(response.content)
+            
+            logger.info(f"Generated recommendation for {product_name} from {recommendation.store}")
+            return recommendation.dict()
+            
         except Exception as e:
-            logger.error(f"Error calling OpenAI API: {str(e)}")
-            raise
-
-    except Exception as e:
-        logger.error(f"Error getting recommendation: {str(e)}")
-        # Return a basic recommendation based on lowest price
-        if 'available_stores' in locals() and available_stores:
-            best_store = min(available_stores.items(), key=lambda x: x[1]["price"])[0]
+            logger.error(f"Error getting recommendation: {str(e)}")
+            # Return a fallback recommendation
             return {
-                "store": best_store,
-                "product_name": item_name,
-                "price": available_stores[best_store]["price"],
-                "is_suitable": True,
-                "dietary_info": available_stores[best_store]["dietary_info"],
-                "explanation": "Selected based on lowest price due to error in processing recommendation."
-            }
-        else:
-            return {
-                "store": store_options[0],
-                "product_name": item_name,
-                "price": None,
+                "store": list(store_data.keys())[0] if store_data else "walmart",
+                "product_name": product_name,
+                "price": min(data.get("price", 0) for data in store_data.values()) if store_data else 0,
                 "is_suitable": False,
                 "dietary_info": {
                     "restrictions_handled": [],
                     "ingredients": [],
-                    "allergen_info": "Error occurred while fetching product information"
+                    "allergen_info": "No allergen information available"
                 },
-                "explanation": "An error occurred while processing your request. Please try again."
-            } 
+                "explanation": f"Unable to generate a detailed recommendation due to an error: {str(e)}"
+            }
+
+# Initialize the recommender
+recommender = ProductRecommender()
+
+async def get_product_recommendation(product_name: str, dietary_restrictions: List[str], store_data: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
+    """
+    Get a product recommendation based on store data and dietary restrictions
+    
+    Args:
+        product_name: Name of the product
+        dietary_restrictions: List of dietary restrictions
+        store_data: Dictionary with store names as keys and product information as values
+        
+    Returns:
+        Dictionary with product recommendation
+    """
+    return await recommender.get_recommendation(product_name, dietary_restrictions, store_data) 

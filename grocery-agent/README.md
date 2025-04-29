@@ -21,9 +21,9 @@ An AI-powered agent that helps users find the best grocery deals and plan their 
    ```bash
    ./bootstrap.sh
    ```
-4. Set your OpenAI API key in your environment:
+4. Set your Google API key in your environment:
    ```bash
-   export OPENAI_API_KEY="your-key-here"
+   export GOOGLE_API_KEY="your-key-here"
    ```
 5. Activate the virtual environment:
    ```bash

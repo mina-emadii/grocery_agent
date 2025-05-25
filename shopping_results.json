@@ -1,0 +1,57 @@
+{
+  "request": {
+    "items": [
+      "organic milk"
+    ],
+    "budget": {
+      "total": null,
+      "per_item": null,
+      "type": "none"
+    },
+    "location": {
+      "city": null,
+      "state": "California"
+    },
+    "dietary_restrictions": [
+      "organic"
+    ]
+  },
+  "results": {
+    "organic milk": [
+      {
+        "name": "Sprouts Organic Lite Coconut Milk",
+        "price": 1.99,
+        "unit": "l",
+        "unit_price": 1.99,
+        "store": "Sprouts",
+        "organic": true,
+        "availability": "In Stock",
+        "source": "Google Shopping - Sprouts",
+        "link": ""
+      },
+      {
+        "name": "Sprouts Organic Coconut Milk",
+        "price": 1.99,
+        "unit": "l",
+        "unit_price": 1.99,
+        "store": "Sprouts",
+        "organic": true,
+        "availability": "In Stock",
+        "source": "Google Shopping - Sprouts",
+        "link": ""
+      },
+      {
+        "name": "Clover Sonoma Organic Whole Milk Quart",
+        "price": 3.79,
+        "unit": "l",
+        "unit_price": 3.79,
+        "store": "Safeway",
+        "organic": true,
+        "availability": "In Stock",
+        "source": "Google Shopping - Instacart",
+        "link": ""
+      }
+    ]
+  },
+  "total_cost": 7.77
+}

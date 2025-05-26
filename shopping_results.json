@@ -1,7 +1,11 @@
 {
   "request": {
     "items": [
-      "organic milk"
+      "chicken",
+      "rice",
+      "vegetables",
+      "halal",
+      "gluten free"
     ],
     "budget": {
       "total": null,
@@ -13,45 +17,172 @@
       "state": "California"
     },
     "dietary_restrictions": [
-      "organic"
+      "halal",
+      "gluten-free"
     ]
   },
   "results": {
-    "organic milk": [
+    "chicken": [
       {
-        "name": "Sprouts Organic Lite Coconut Milk",
-        "price": 1.99,
-        "unit": "l",
-        "unit_price": 1.99,
+        "name": "Open Nature Halal Chicken Drumsticks",
+        "price": 4.99,
+        "unit": "lb",
+        "unit_price": 4.99,
+        "store": "Sprouts",
+        "organic": false,
+        "availability": "In Stock",
+        "source": "AI estimation"
+      },
+      {
+        "name": "Crescent Foods Halal Chicken Breast",
+        "price": 7.99,
+        "unit": "lb",
+        "unit_price": 7.99,
         "store": "Sprouts",
         "organic": true,
         "availability": "In Stock",
-        "source": "Google Shopping - Sprouts",
-        "link": ""
+        "source": "AI estimation"
       },
       {
-        "name": "Sprouts Organic Coconut Milk",
-        "price": 1.99,
-        "unit": "l",
-        "unit_price": 1.99,
+        "name": "Saffron Road Halal Chicken Tenders",
+        "price": 9.99,
+        "unit": "lb",
+        "unit_price": 9.99,
         "store": "Sprouts",
-        "organic": true,
+        "organic": false,
         "availability": "In Stock",
-        "source": "Google Shopping - Sprouts",
-        "link": ""
+        "source": "AI estimation"
+      }
+    ],
+    "rice": [
+      {
+        "name": "Uncle Ben's Original Converted Brand Enriched Parboiled Long Grain Rice",
+        "price": 2.99,
+        "unit": "lb",
+        "unit_price": 0.18,
+        "store": "Safeway",
+        "organic": false,
+        "availability": "In Stock",
+        "source": "AI estimation"
       },
       {
-        "name": "Clover Sonoma Organic Whole Milk Quart",
+        "name": "Signature SELECT Rice Basmati",
         "price": 3.79,
-        "unit": "l",
-        "unit_price": 3.79,
+        "unit": "lb",
+        "unit_price": 0.23,
+        "store": "Safeway",
+        "organic": false,
+        "availability": "In Stock",
+        "source": "AI estimation"
+      },
+      {
+        "name": "Bob's Red Mill Gluten Free Brown Rice Flour",
+        "price": 3.49,
+        "unit": "24 oz",
+        "unit_price": 0.15,
+        "store": "Sprouts",
+        "organic": false,
+        "availability": "In Stock",
+        "source": "AI estimation"
+      }
+    ],
+    "vegetables": [
+      {
+        "name": "O Organics Baby Carrots",
+        "price": 1.49,
+        "unit": "lb",
+        "unit_price": 1.49,
         "store": "Safeway",
         "organic": true,
         "availability": "In Stock",
-        "source": "Google Shopping - Instacart",
+        "source": "AI estimation"
+      },
+      {
+        "name": "Green Giant Fresh Broccoli",
+        "price": 1.99,
+        "unit": "lb",
+        "unit_price": 1.99,
+        "store": "Safeway",
+        "organic": false,
+        "availability": "In Stock",
+        "source": "AI estimation"
+      },
+      {
+        "name": "Grimmway Farms Organic Baby Broccoli",
+        "price": 2.99,
+        "unit": "8 oz",
+        "unit_price": 0.37,
+        "store": "Sprouts",
+        "organic": true,
+        "availability": "In Stock",
+        "source": "AI estimation"
+      }
+    ],
+    "halal": [
+      {
+        "name": "Ziyad Gourmet Halal Large Marshmallows, Pork-Free, Egg-Free, Dairy-Free, Gluten-Free, Perfect for Holidays and S\u2019mores! 8.8oz (Pack of 4)",
+        "price": 26.99,
+        "unit": "oz",
+        "unit_price": 26.99,
+        "store": "Safeway",
+        "organic": false,
+        "availability": "In Stock",
+        "source": "Google Shopping - Amazon.com - Seller",
         "link": ""
+      },
+      {
+        "name": "Saffron Road Chicken Tikka Masala",
+        "price": 5.49,
+        "unit": "10 oz",
+        "unit_price": 0.55,
+        "store": "Sprouts",
+        "organic": false,
+        "availability": "In Stock",
+        "source": "AI estimation"
+      },
+      {
+        "name": "Mary's Free Range Halal Chicken",
+        "price": 9.99,
+        "unit": "lb",
+        "unit_price": 9.99,
+        "store": "Sprouts",
+        "organic": true,
+        "availability": "In Stock",
+        "source": "AI estimation"
+      }
+    ],
+    "gluten free": [
+      {
+        "name": "Bob's Red Mill Gluten Free Oatmeal",
+        "price": 5.99,
+        "unit": "16 oz",
+        "unit_price": 0.37,
+        "store": "Safeway",
+        "organic": false,
+        "availability": "In Stock",
+        "source": "AI estimation"
+      },
+      {
+        "name": "Udi's Gluten Free Whole Grain Bread",
+        "price": 4.99,
+        "unit": "12 oz",
+        "unit_price": 0.42,
+        "store": "Safeway",
+        "organic": false,
+        "availability": "In Stock",
+        "source": "AI estimation"
+      },
+      {
+        "name": "Enjoy Life Gluten Free Chocolate Chip Cookies",
+        "price": 3.99,
+        "unit": "6 oz",
+        "unit_price": 0.67,
+        "store": "Safeway",
+        "organic": false,
+        "availability": "In Stock",
+        "source": "AI estimation"
       }
     ]
   },
-  "total_cost": 7.77
+  "total_cost": 97.14999999999998
 }
